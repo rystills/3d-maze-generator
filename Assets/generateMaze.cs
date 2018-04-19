@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class generateMaze : MonoBehaviour {
-	private const int mazeSize = 9;
+	private const int mazeSize = 21;
 	bool[,] map;
+	public Material mazeMat;
 
 	void Start() {
 		map = new bool[mazeSize, mazeSize];
@@ -26,47 +27,74 @@ public class generateMaze : MonoBehaviour {
 
 		//prepare mesh components
 		MeshFilter mf = gameObject.AddComponent< MeshFilter > ();
-		gameObject.AddComponent<MeshRenderer>();
+		MeshRenderer mr = gameObject.AddComponent<MeshRenderer>();
+		mr.material = mazeMat;
 		Mesh mesh = new Mesh();
 		mf.mesh = mesh;
 
 		//init mesh data arrays
-		Vector3[] vertices = new Vector3[4*numWalls];
-		int[] tri = new int[6 * numWalls];
-		Vector3[] normals = new Vector3[4 * numWalls];
-		Vector2[] uv = new Vector2[4 * numWalls];
+		Vector3[] vertices = new Vector3[8*numWalls];
+		int[] tri = new int[30 * numWalls];
+		Vector3[] normals = new Vector3[8 * numWalls];
+		Vector2[] uv = new Vector2[8 * numWalls];
 
 		//generate independent wall pieces
 		int curPiece = 0;
 		for (int i = 0; i < mazeSize; ++i) {
 			for (int r = 0; r < mazeSize; ++r) {
 				if (map[i, r]) {
-					//construct verts
-					vertices[curPiece*4] = new Vector3(i, 0, r);
-					vertices[curPiece * 4+1] = new Vector3(i+1, 0, r);
-					vertices[curPiece * 4+2] = new Vector3(i, 0, r+1);
-					vertices[curPiece * 4+3] = new Vector3(i+1, 0, r+1);
+					//construct verts (4 top, then 4 bottom)
+					for (int j = 0; j < 2; ++j) {
+						vertices[curPiece * 8+4*j] = new Vector3(i, 1-j, r);
+						vertices[curPiece * 8 + 1+4*j] = new Vector3(i + 1, 1 - j, r);
+						vertices[curPiece * 8 + 2 + 4 * j] = new Vector3(i, 1 - j, r + 1);
+						vertices[curPiece * 8 + 3 + 4 * j] = new Vector3(i + 1, 1 - j, r + 1);
+					}
 
 					//construct tris
-					tri[curPiece*6] = curPiece * 4;
-					tri[curPiece * 6+1] = curPiece * 4+2;
-					tri[curPiece * 6+2] = curPiece * 4+1;
+					int[,] pieceNumbers;
+					pieceNumbers = new int[,] {
+						{
+							0,1,2,3
+						},
+						{
+							4,5,0,1
+						},
+						{
+							2,3,6,7
+						},
+						{
+							0,2,4,6
+						},
+						{
+							5,7,1,3
+						}
+					};
 
-					tri[curPiece * 6+3] = curPiece * 4+2;
-					tri[curPiece * 6+4] = curPiece * 4+3;
-					tri[curPiece * 6+5] = curPiece * 4+1;
+					for (int j = 0; j < 5; ++j) {
+						tri[curPiece * 30 + 6*j] = curPiece * 8 + pieceNumbers[j,0];
+						tri[curPiece * 30 + 1+ 6 * j] = curPiece * 8 + +pieceNumbers[j, 2];
+						tri[curPiece * 30 + 2 + 6 * j] = curPiece * 8 + +pieceNumbers[j, 1];
+						tri[curPiece * 30 + 3 + 6 * j] = curPiece * 8 + +pieceNumbers[j, 2];
+						tri[curPiece * 30 + 4 + 6 * j] = curPiece * 8 + +pieceNumbers[j, 3];
+						tri[curPiece * 30 + 5 + 6 * j] = curPiece * 8 + +pieceNumbers[j, 1];
+					}
 
-					//construct normals
-					normals[curPiece*4] = -Vector3.forward;
-					normals[curPiece * 4+1] = -Vector3.forward;
-					normals[curPiece * 4+2] = -Vector3.forward;
-					normals[curPiece * 4+3] = -Vector3.forward;
+					//construct normals (value here doesn't matter as Unity will recalculate these for us)
+					for (int j = 0; j < 2; ++j) {
+						normals[curPiece * 8 + 4 * j] = -Vector3.forward;
+						normals[curPiece * 8 + 1 + 4 * j] = -Vector3.forward;
+						normals[curPiece * 8 + 2 + 4 * j] = -Vector3.forward;
+						normals[curPiece * 8 + 3 + 4 * j] = -Vector3.forward;
+					}
 
 					//construct uvs
-					uv[curPiece*4] = new Vector2(0, 0);
-					uv[curPiece * 4+1] = new Vector2(1, 0);
-					uv[curPiece * 4+2] = new Vector2(0, 1);
-					uv[curPiece * 4+3] = new Vector2(1, 1);
+					for (int j = 0; j < 2; ++j) {
+						uv[curPiece * 8 + 4*j] = new Vector2(0, 0);
+						uv[curPiece * 8 + 1 + 4 * j] = new Vector2(1, 0);
+						uv[curPiece * 8 + 2 + 4 * j] = new Vector2(0, 1);
+						uv[curPiece * 8 + 3 + 4 * j] = new Vector2(1, 1);
+					}
 
 					++curPiece;
 				}
@@ -78,6 +106,9 @@ public class generateMaze : MonoBehaviour {
 		mesh.triangles = tri;
 		mesh.normals = normals;
 		mesh.uv = uv;
+
+		//recalculate normals
+		mf.mesh.RecalculateNormals();
 	}
 
 	/**

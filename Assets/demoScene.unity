@@ -153,6 +153,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f519c55b4336837409ca6408799c273f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mazeMat: {fileID: 2100000, guid: 52ff820d928aea942baac34bfea27c0f, type: 2}
 --- !u!1 &1559012951
 GameObject:
   m_ObjectHideFlags: 0
