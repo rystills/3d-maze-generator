@@ -6,6 +6,7 @@ public class generateMaze : MonoBehaviour {
 	private const int mazeSize = 21;
 	bool[,] map;
 	public Material mazeMat;
+	public Material floorMat;
 
 	void Start() {
 		map = new bool[mazeSize, mazeSize];
@@ -28,15 +29,19 @@ public class generateMaze : MonoBehaviour {
 		//prepare mesh components
 		MeshFilter mf = gameObject.AddComponent< MeshFilter > ();
 		MeshRenderer mr = gameObject.AddComponent<MeshRenderer>();
-		mr.material = mazeMat;
+		Material[] mats = new Material[2];
+		mats[0] = mazeMat;
+		mats[1] = floorMat;
+		mr.materials = mats;
 		Mesh mesh = new Mesh();
 		mf.mesh = mesh;
 
-		//init mesh data arrays
-		Vector3[] vertices = new Vector3[8*numWalls];
+		//init mesh data arrays, with a bit of extra data for the two floor triangles (separate tri list, other data in same arrays) 
+		Vector3[] vertices = new Vector3[8*numWalls + 4];
 		int[] tri = new int[30 * numWalls];
-		Vector3[] normals = new Vector3[8 * numWalls];
-		Vector2[] uv = new Vector2[8 * numWalls];
+		int[] floorTris = new int[6];
+		Vector3[] normals = new Vector3[8 * numWalls + 4];
+		Vector2[] uv = new Vector2[8 * numWalls + 4];
 
 		//generate independent wall pieces
 		int curPiece = 0;
@@ -81,14 +86,6 @@ public class generateMaze : MonoBehaviour {
 						tri[curPiece * 30 + 5 + 6 * j] = curPiece * 8 + +pieceNumbers[j, 1];
 					}
 
-					//construct normals (value here doesn't matter as Unity will recalculate these for us)
-					for (int j = 0; j < 2; ++j) {
-						normals[curPiece * 8 + 4 * j] = -Vector3.forward;
-						normals[curPiece * 8 + 1 + 4 * j] = -Vector3.forward;
-						normals[curPiece * 8 + 2 + 4 * j] = -Vector3.forward;
-						normals[curPiece * 8 + 3 + 4 * j] = -Vector3.forward;
-					}
-
 					//construct uvs
 					for (int j = 0; j < 2; ++j) {
 						uv[curPiece * 8 + 4*j] = new Vector2(j, j);
@@ -102,9 +99,32 @@ public class generateMaze : MonoBehaviour {
 			}
 		}
 
+		//generate floor verts
+		vertices[vertices.Length-4] = new Vector3(0,0,0);
+		vertices[vertices.Length - 3] = new Vector3(mazeSize, 0, 0);
+		vertices[vertices.Length - 2] = new Vector3(0, 0, mazeSize);
+		vertices[vertices.Length - 1] = new Vector3(mazeSize, 0, mazeSize);
+
+		//generate floor tris
+		floorTris[0] = vertices.Length - 4;
+		floorTris[1] = vertices.Length - 2;
+		floorTris[2] = vertices.Length - 3;
+		floorTris[3] = vertices.Length - 2;
+		floorTris[4] = vertices.Length - 1;
+		floorTris[5] = vertices.Length - 3;
+
+
+		//generate floor uvs
+		uv[uv.Length - 4] = new Vector2(0, 0);
+		uv[uv.Length - 3] = new Vector2(0, 1);
+		uv[uv.Length - 2] = new Vector2(1, 0);
+		uv[uv.Length - 1] = new Vector2(1, 1);
+
 		//assign mesh vals to mesh component
+		mesh.subMeshCount = 2;
 		mesh.vertices = vertices;
-		mesh.triangles = tri;
+		mesh.SetTriangles(tri, 0);
+		mesh.SetTriangles(floorTris, 1);
 		mesh.normals = normals;
 		mesh.uv = uv;
 

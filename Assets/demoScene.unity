@@ -154,6 +154,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mazeMat: {fileID: 2100000, guid: 52ff820d928aea942baac34bfea27c0f, type: 2}
+  floorMat: {fileID: 2100000, guid: 47c598e03e409ab40887ff41b6f54947, type: 2}
 --- !u!1 &1559012951
 GameObject:
   m_ObjectHideFlags: 0
