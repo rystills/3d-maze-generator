@@ -53,6 +53,7 @@ public class generateMaze : MonoBehaviour {
 
 					//construct tris
 					int[,] pieceNumbers;
+					//define vertex orders for each of the 5 wall polys
 					pieceNumbers = new int[,] {
 						{
 							0,1,2,3
@@ -90,10 +91,10 @@ public class generateMaze : MonoBehaviour {
 
 					//construct uvs
 					for (int j = 0; j < 2; ++j) {
-						uv[curPiece * 8 + 4*j] = new Vector2(0, 0);
-						uv[curPiece * 8 + 1 + 4 * j] = new Vector2(1, 0);
-						uv[curPiece * 8 + 2 + 4 * j] = new Vector2(0, 1);
-						uv[curPiece * 8 + 3 + 4 * j] = new Vector2(1, 1);
+						uv[curPiece * 8 + 4*j] = new Vector2(j, j);
+						uv[curPiece * 8 + 1 + 4 * j] = new Vector2(1-j, j);
+						uv[curPiece * 8 + 2 + 4 * j] = new Vector2(j, 1-j);
+						uv[curPiece * 8 + 3 + 4 * j] = new Vector2(1-j, 1-j);
 					}
 
 					++curPiece;
