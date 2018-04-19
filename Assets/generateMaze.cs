@@ -10,6 +10,74 @@ public class generateMaze : MonoBehaviour {
 		map = new bool[mazeSize, mazeSize];
 		mazifyMap();
 		displayMap();
+		constructMesh();
+	}
+
+	void constructMesh() {
+		//count number of walls
+		int numWalls = 0;
+		for (int i = 0; i < mazeSize; ++i) {
+			for (int r = 0; r < mazeSize; ++r) {
+				if (map[i, r]) {
+					++numWalls;
+				}
+			}
+		}
+
+		//prepare mesh components
+		MeshFilter mf = gameObject.AddComponent< MeshFilter > ();
+		gameObject.AddComponent<MeshRenderer>();
+		Mesh mesh = new Mesh();
+		mf.mesh = mesh;
+
+		//init mesh data arrays
+		Vector3[] vertices = new Vector3[4*numWalls];
+		int[] tri = new int[6 * numWalls];
+		Vector3[] normals = new Vector3[4 * numWalls];
+		Vector2[] uv = new Vector2[4 * numWalls];
+
+		//generate independent wall pieces
+		int curPiece = 0;
+		for (int i = 0; i < mazeSize; ++i) {
+			for (int r = 0; r < mazeSize; ++r) {
+				if (map[i, r]) {
+					//construct verts
+					vertices[curPiece*4] = new Vector3(i, 0, r);
+					vertices[curPiece * 4+1] = new Vector3(i+1, 0, r);
+					vertices[curPiece * 4+2] = new Vector3(i, 0, r+1);
+					vertices[curPiece * 4+3] = new Vector3(i+1, 0, r+1);
+
+					//construct tris
+					tri[curPiece*6] = curPiece * 4;
+					tri[curPiece * 6+1] = curPiece * 4+2;
+					tri[curPiece * 6+2] = curPiece * 4+1;
+
+					tri[curPiece * 6+3] = curPiece * 4+2;
+					tri[curPiece * 6+4] = curPiece * 4+3;
+					tri[curPiece * 6+5] = curPiece * 4+1;
+
+					//construct normals
+					normals[curPiece*4] = -Vector3.forward;
+					normals[curPiece * 4+1] = -Vector3.forward;
+					normals[curPiece * 4+2] = -Vector3.forward;
+					normals[curPiece * 4+3] = -Vector3.forward;
+
+					//construct uvs
+					uv[curPiece*4] = new Vector2(0, 0);
+					uv[curPiece * 4+1] = new Vector2(1, 0);
+					uv[curPiece * 4+2] = new Vector2(0, 1);
+					uv[curPiece * 4+3] = new Vector2(1, 1);
+
+					++curPiece;
+				}
+			}
+		}
+
+		//assign mesh vals to mesh component
+		mesh.vertices = vertices;
+		mesh.triangles = tri;
+		mesh.normals = normals;
+		mesh.uv = uv;
 	}
 
 	/**
@@ -71,7 +139,7 @@ public class generateMaze : MonoBehaviour {
 		for (int i = 0; i < mazeSize; ++i) {
 			mapStr += '|';
 			for (int r = 0; r < mazeSize; ++r) {
-				mapStr += (map[i, r] ? 'T' : 'F') + "|";
+				mapStr += (map[i, r] ? 'o' : '_') + "|";
 			}
 			if (i != mazeSize - 1) {
 				mapStr += '\n';
