@@ -116,9 +116,9 @@ public class generateMaze : MonoBehaviour {
 
 		//generate floor uvs
 		uv[uv.Length - 4] = new Vector2(0, 0);
-		uv[uv.Length - 3] = new Vector2(0, 1);
-		uv[uv.Length - 2] = new Vector2(1, 0);
-		uv[uv.Length - 1] = new Vector2(1, 1);
+		uv[uv.Length - 3] = new Vector2(0, mazeSize);
+		uv[uv.Length - 2] = new Vector2(mazeSize, 0);
+		uv[uv.Length - 1] = new Vector2(mazeSize, mazeSize);
 
 		//assign mesh vals to mesh component
 		mesh.subMeshCount = 2;
